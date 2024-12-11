@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SortMySongs - Login</title>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body class="bg-[#FAF7F0] flex flex-col justify-center items-center h-screen gap-4">
+    <div class="bg-white p-4 rounded shadow-md w-full max-w-md">
+        <div class="space-y-2">
+            <div class="flex justify-center pt-20 pb-10">
+                <img src="/logo.svg" alt="Logo" class="w-96" />
+            </div>
+            <div class="space-y-4 p-5">
+                <button id="spotify-login" class="bg-[#4A4947] text-[#FAF7F0] px-4 py-3 rounded w-full"><i class="fa-brands fa-spotify px-2"></i> Login with Spotify</button>
+                <button id="deezer-login" class="disabled bg-[#c4bcbc] text-[#FAF7F0] px-4 py-3 rounded w-full" style="cursor: not-allowed;"><i class="fa-brands fa-deezer px-2"></i> Login with Deezer</button>
+            </div>
+        </div>
+    </div>
+        <!-- ✨ (Not That) Beautiful Footer ✨ -->
+        <div class="bg-white p-4 rounded shadow-md w-full max-w-md text-center">
+            <div class="text-sm text-[#7c7b7a] space-y-2">
+                <p class="font-medium text-[#4A4947]">Made by Paylicier with 💖 and 🌊</p>
+                <p>This is an independent project not affiliated with or endorsed by Spotify or Deezer.</p>
+                <div class="flex justify-center items-center gap-1.5 text-xs pt-2">
+                    <span>This project is open-source on</span>
+                    <a href="https://github.com/Paylicier/SortMySongs" target="_blank" class="hover:text-[#4A4947] transition-colors">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+</body>
+</html>
+<script>
+    document.getElementById('spotify-login').addEventListener('click', () => {
+        window.location.href = '/auth/spotify';
+    });
+    // document.getElementById('deezer-login').addEventListener('click', () => {
+    //     window.location.href = '/auth/deezer';
+    // });
+</script>

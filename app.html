@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SortMySongs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .little-cells-container {
+            display: grid;
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+        }
+    
+        .little-cell {
+            aspect-ratio: 1;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+    
+        .playlist-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 0.2s;
+        }
+    
+        .playlist-image:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body class="bg-[#FAF7F0] flex flex-col justify-center items-center h-screen py-48 gap-4">
+    <div class="bg-white p-10 m-10 rounded shadow-md w-full max-w-screen-lg h-full flex flex-col justify-between">
+        <div id="playlistSelScreen">
+            <h1 class="text-2xl font-bold mb-1 text-[#4A4947]" id="greetings">Hello,</h1>
+            <p class="mb-6 text-[#7c7b7a]">Choose a playlist to start</p>
+            <div class="grid grid-cols-3 gap-6 py-5">
+                <div class="bg-[#4A4947] rounded p-6 flex flex-col items-center justify-center aspect-square cursor-pointer" id="favSongs">
+                    <i class="fas fa-heart text-white text-4xl mb-3"></i>
+                    <p class="text-white text-lg">Liked songs</p>
+                </div>
+                <div class="bg-[#4A4947] rounded p-6 flex flex-col items-center justify-center aspect-square cursor-pointer" id="topSongs">
+                    <i class="fas fa-medal text-white text-4xl mb-3"></i>
+                    <p class="text-white text-lg">Most listened songs</p>
+                </div>
+                <div class="bg-[#4A4947] rounded p-10 flex items-center justify-center aspect-square">
+                    <div class="little-cells-container p-2" id="littleCellsContainer">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="flex justify-center pb-5">
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 bg-[#B17457] rounded-full"></div>
+                <div class="w-3 h-3 bg-[#4A4947] rounded-full"></div>
+                <div class="w-3 h-3 bg-[#4A4947] rounded-full"></div>
+            </div>
+        </div> -->
+    </div>
+    <!-- ✨ (Not That) Beautiful Footer ✨ -->
+    <div class="bg-white p-4 rounded shadow-md w-full max-w-md text-center">
+        <div class="text-sm text-[#7c7b7a] space-y-2">
+            <p class="font-medium text-[#4A4947]">Made by Paylicier with 💖 and 🌊</p>
+            <p>This is an independent project not affiliated with or endorsed by Spotify or Deezer.</p>
+            <div class="flex justify-center items-center gap-1.5 text-xs pt-2">
+                <span>This project is open-source on</span>
+                <a href="https://github.com/Paylicier/SortMySongs" target="_blank" class="hover:text-[#4A4947] transition-colors">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    const date = new Date();
+    const hour = date.getHours();
+    let greeting = '';
+    let profile = {};
+
+    document.getElementById('favSongs').addEventListener('click', () => {
+        window.location.href = '/playlist/liked';
+    });
+    document.getElementById('topSongs').addEventListener('click', () => {
+        window.location.href = '/playlist/top';
+    });
+
+    // POST /api/profile
+
+    fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(profile),
+    })
+        .then((response) => profile = response.json())
+        .then((data) => {
+            document.getElementById('greetings').textContent = `${greeting} ${data?.display_name},`;
+            addPlaylistCells();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            window.location.href = '/';
+        });
+
+    if (hour >= 0 && hour < 12) {
+        greeting = 'Good Morning';
+    } else if (hour >= 12 && hour < 18) {
+        greeting = 'Good Afternoon';
+    } else {
+        greeting = 'Good Evening';
+    }
+
+    function addPlaylistCells() {
+    const littleCellsContainer = document.getElementById('littleCellsContainer');
+    
+    fetch('/api/playlists', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            const playlists = data.items;
+            if(playlists.length === 0) {
+                return alert('No playlists found');
+            }
+            
+            littleCellsContainer.innerHTML = '';
+
+            const validPlaylists = playlists
+                .filter(playlist => playlist.images && playlist.images.length > 0)
+                .slice(0, 9);
+
+            validPlaylists.forEach((playlist) => {
+                const littleCell = document.createElement('div');
+                littleCell.className = 'little-cell cursor-pointer';
+                
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'playlist-image';
+                imageDiv.id = `playlist-${playlist.id}`;
+                imageDiv.addEventListener('click', () => {
+                    window.location.href = `/playlist/${playlist.id}`;
+                });
+                imageDiv.style.backgroundImage = `url('${playlist.images[0].url}')`;
+                
+                littleCell.appendChild(imageDiv);
+                littleCellsContainer.appendChild(littleCell);
+            });
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+</script>

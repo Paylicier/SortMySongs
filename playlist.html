@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SortMySongs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .little-cells-container {
+            display: grid;
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+        }
+    
+        .little-cell {
+            aspect-ratio: 1;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+    
+        .playlist-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 0.2s;
+        }
+    
+        .playlist-image:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes load {
+            0% {
+                transform: scale(1);
+            }
+            35% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .load-anim {
+            animation: load 2s linear infinite;
+        }
+
+        @layer utilities {
+  .better-scrollbar::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  .better-scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: #FAF7F0;
+  }
+
+  .better-scrollbar::-webkit-scrollbar-thumb {
+    background: #dad8d1;
+    height: 50px;
+    border-radius: 100vh;
+    border: 3px solid #FAF7F0;
+  }
+
+  .better-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #b1afa9;
+  }
+}
+    </style>
+</head>
+
+<body class="bg-[#FAF7F0] flex flex-col justify-center items-center h-screen py-48 gap-4">
+    <div class="bg-white p-10 m-10 rounded shadow-md w-full max-w-screen-lg h-full flex flex-col justify-between">
+        <div id="playlistSelScreen">
+            <h1 class="text-2xl font-bold mb-1 text-[#4A4947]" id="playlistName">You choosed the playlist </h1>
+            <p class="mb-6 text-[#7c7b7a]">Great choice ! Now choose a way to sort the songs...</p>
+            <div class="grid grid-cols-3 gap-6 py-5">
+                <div class="bg-[#4A4947] rounded p-6 flex flex-col items-center justify-center aspect-square cursor-pointer" id="release">
+                    <i class="fas fa-calendar text-white text-4xl mb-3"></i>
+                    <p class="text-white text-lg">Release Year</p>
+                </div>
+                <div class="bg-[#4A4947] rounded p-6 flex flex-col items-center justify-center aspect-square cursor-pointer" id="popularity">
+                    <i class="fas fa-chart-line text-white text-4xl mb-3"></i>
+                    <p class="text-white text-lg">Popularity</p>
+                </div>
+                <div class="bg-[#4A4947] rounded p-6 flex flex-col items-center justify-center aspect-square cursor-pointer" id="artist">
+                    <i class="fas fa-user text-white text-4xl mb-3"></i>
+                    <p class="text-white text-lg">Artist</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingScreen" class="hidden flex-col items-center justify-center h-full">
+            <div class="flex justify-center pt-20 pb-10">
+                <img src="/logo.svg" alt="Logo" class="w-96 load-anim" />
+            </div>
+            <p class="text-[#4A4947] text-xl">Sorting your songs...</p>
+        </div>
+
+        <div id="resultsScreen" class="hidden flex-col h-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-[#4A4947]">Sorted Results</h2>
+                <button onclick="backToSelection()" class="px-4 py-2 bg-[#4A4947] text-white rounded hover:bg-opacity-90">
+                    <i class="fas fa-arrow-left mr-2"></i>Back
+                </button>
+            </div>
+            <div id="sortedResults" class="overflow-y-auto flex-grow better-scrollbar">
+            </div>
+        </div>
+        <!-- <div class="flex justify-center pb-5">
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 bg-[#4A4947] rounded-full"></div>
+                <div class="w-3 h-3 bg-[#B17457] rounded-full"></div>
+                <div class="w-3 h-3 bg-[#4A4947] rounded-full"></div>
+            </div>
+        </div> -->
+    </div>
+    <!-- ✨ (Not That) Beautiful Footer ✨ -->
+    <div class="bg-white p-4 rounded shadow-md w-full max-w-md text-center">
+        <div class="text-sm text-[#7c7b7a] space-y-2">
+            <p class="font-medium text-[#4A4947]">Made by Paylicier with 💖 and 🌊</p>
+            <p>This is an independent project not affiliated with or endorsed by Spotify or Deezer.</p>
+            <div class="flex justify-center items-center gap-1.5 text-xs pt-2">
+                <span>This project is open-source on</span>
+                <a href="https://github.com/Paylicier/SortMySongs" target="_blank" class="hover:text-[#4A4947] transition-colors">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    let playlistName = ''
+    function showScreen(screenId) {
+        ['playlistSelScreen', 'loadingScreen', 'resultsScreen'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add('hidden');
+                element.classList.remove('flex');
+            }
+        });
+        const screen = document.getElementById(screenId);
+        if (screen) {
+            screen.classList.remove('hidden');
+            if(screenId === 'playlistSelScreen') return;
+            screen.classList.add('flex');
+        }
+    }
+
+    function backToSelection() {
+        showScreen('playlistSelScreen');
+    }
+
+    function displayResults(data, sortType) {
+    const container = document.getElementById('sortedResults');
+    container.innerHTML = '';
+
+    data.forEach(group => {
+        const section = document.createElement('div');
+        section.className = 'mb-6';
+        
+        const headerContainer = document.createElement('div');
+        headerContainer.className = 'flex justify-between items-center mb-4';
+        
+        const headerLeft = document.createElement('div');
+        headerLeft.className = 'flex items-center gap-3';
+        
+        const header = document.createElement('h3');
+        header.className = 'text-xl font-bold text-[#4A4947]';
+        header.textContent = group.name;
+        
+        const songCount = document.createElement('span');
+        songCount.className = 'text-[#7c7b7a] text-lg';
+        songCount.textContent = `${group.songs.length} songs`;
+        
+        headerLeft.appendChild(header);
+        headerLeft.appendChild(songCount);
+
+        const exportButton = document.createElement('button');
+        exportButton.className = 'px-4 py-2 bg-[#4A4947] text-white rounded hover:bg-opacity-90 text-sm flex items-center gap-2';
+        exportButton.innerHTML = '<i class="fas fa-file-export"></i> Export playlist';
+        exportButton.onclick = () => exportPlaylist(group.songs, `${playlistName} - ${group.name}`);
+        
+        headerContainer.appendChild(headerLeft);
+        headerContainer.appendChild(exportButton);
+        section.appendChild(headerContainer);
+
+        const songsList = document.createElement('div');
+        songsList.className = 'space-y-3';
+
+        group.songs.forEach(song => {
+            const songItem = document.createElement('div');
+            songItem.className = 'bg-[#4A4947] p-4 rounded-lg flex items-center text-white';
+            songItem.innerHTML = `
+                <img src="${song?.track?.album?.images[song?.track?.album?.images?.length-1]?.url || ''}" 
+                     alt="${song?.track?.name}" 
+                     class="w-12 h-12 rounded mr-4">
+                <div>
+                    <div class="font-medium">${song?.track?.name}</div>
+                    <div class="text-sm opacity-75">${song?.track?.artists?.map(artist => artist.name).join(', ')}</div>
+                </div>
+            `;
+            songsList.appendChild(songItem);
+        });
+
+        section.appendChild(songsList);
+        container.appendChild(section);
+    });
+
+    showScreen('resultsScreen');
+}
+
+function exportPlaylist(songs, name) {
+    fetch('/api/export', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            songs: songs,
+            name: name
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Playlist exported successfully!');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to export playlist. Please try again.');
+    });
+}
+
+    function handleSort(sortType) {
+        showScreen('loadingScreen');
+        
+        fetch('/api/sort', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                playlistId: window.location.pathname.split('/')[2], 
+                sortType: sortType 
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayResults(data, sortType);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred, please try again later');
+            showScreen('playlistSelScreen');
+        });
+    }
+
+    document.getElementById('release').addEventListener('click', () => handleSort('release'));
+    document.getElementById('popularity').addEventListener('click', () => handleSort('popularity'));
+    document.getElementById('artist').addEventListener('click', () => handleSort('artist'));
+
+    fetch('/api/playlist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ playlistId: window.location.pathname.split('/')[2]}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        playlistName = data?.playlist.name;
+        document.getElementById('playlistName').textContent = `You chose the playlist ${data?.playlist.name}`;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        window.location.href = '/';
+    });
+</script>
